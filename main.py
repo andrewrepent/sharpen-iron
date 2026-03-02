@@ -360,6 +360,66 @@ def generate_html(topics, people, topic_stats, person_scores):
   .video-platform {{ font-size: 0.7rem; color: var(--muted); margin-top: 4px; }}
   .no-videos-msg {{ color: var(--muted); font-size: 0.9rem; padding: 24px; text-align: center; }}
 
+  /* BUDDY FINDER */
+  .buddy-search-wrap {{ max-width: 480px; margin-bottom: 28px; }}
+  .buddy-search-wrap .search-panel {{ padding: 18px 20px; }}
+  .buddy-search-wrap .search-panel h2 {{ margin-bottom: 8px; }}
+  .buddy-search-wrap .search-panel p {{ margin-bottom: 14px; }}
+  .buddy-sections {{ display: flex; flex-direction: column; gap: 28px; }}
+  .buddy-section-title {{ font-size: 0.85rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }}
+  .buddy-section-title::after {{ content: ''; flex: 1; height: 1px; background: var(--border); }}
+  .buddy-pairs-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }}
+  @media (max-width: 700px) {{ .buddy-pairs-grid {{ grid-template-columns: 1fr; }} }}
+  .buddy-card {{ background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; transition: border-color 0.2s, transform 0.15s; position: relative; overflow: hidden; }}
+  .buddy-card::before {{ content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); opacity: 0; transition: opacity 0.2s; }}
+  .buddy-card:hover {{ border-color: var(--accent); transform: translateY(-2px); }}
+  .buddy-card:hover::before {{ opacity: 1; }}
+  .buddy-card-header {{ display: flex; align-items: center; gap: 10px; justify-content: space-between; }}
+  .buddy-name {{ font-size: 1.05rem; font-weight: 700; color: var(--text); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+  .buddy-rank {{ font-size: 0.7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0; }}
+  .buddy-score-row {{ display: flex; align-items: center; gap: 10px; }}
+  .buddy-score-label {{ font-size: 0.75rem; color: var(--muted); white-space: nowrap; }}
+  .buddy-score-bar {{ flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }}
+  .buddy-score-bar-fill {{ height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.4s ease; }}
+  .buddy-exchange {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }}
+  .buddy-direction {{ background: var(--surface2); border-radius: 8px; padding: 10px 12px; }}
+  .buddy-dir-label {{ font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+  .buddy-dir-label.can-teach {{ color: var(--yes); }}
+  .buddy-dir-label.learns-from {{ color: var(--accent); }}
+  .buddy-dir-count {{ font-size: 1.2rem; font-weight: 800; color: var(--text); line-height: 1; margin-bottom: 8px; }}
+  .buddy-dir-count span {{ font-size: 0.72rem; font-weight: 400; color: var(--muted); margin-left: 2px; }}
+  .buddy-topic-pills {{ display: flex; flex-direction: column; gap: 3px; }}
+  .buddy-pill {{ font-size: 0.7rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 2px 0 2px 6px; border-left: 2px solid var(--border); }}
+  .buddy-pill.teach {{ border-left-color: var(--yes); color: var(--text); }}
+  .buddy-pill.learn {{ border-left-color: var(--accent); color: var(--text); }}
+  .buddy-footer {{ display: flex; align-items: center; gap: 6px; padding-top: 6px; border-top: 1px solid var(--border); flex-wrap: wrap; }}
+  .buddy-gap-badge {{ font-size: 0.72rem; background: rgba(224,83,83,0.12); color: var(--no); border: 1px solid rgba(224,83,83,0.25); border-radius: 12px; padding: 2px 8px; font-weight: 600; }}
+  .buddy-common-badge {{ font-size: 0.72rem; background: rgba(61,186,110,0.1); color: var(--yes); border: 1px solid rgba(61,186,110,0.2); border-radius: 12px; padding: 2px 8px; font-weight: 600; }}
+  .buddy-trios-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 14px; }}
+  @media (max-width: 800px) {{ .buddy-trios-grid {{ grid-template-columns: 1fr; }} }}
+  .trio-card {{ background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; transition: border-color 0.2s, transform 0.15s; position: relative; overflow: hidden; }}
+  .trio-card::before {{ content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--yes), var(--accent), var(--accent2)); opacity: 0; transition: opacity 0.2s; }}
+  .trio-card:hover {{ border-color: var(--accent2); transform: translateY(-2px); }}
+  .trio-card:hover::before {{ opacity: 1; }}
+  .trio-names {{ display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }}
+  .trio-name-chip {{ background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 4px 10px; font-size: 0.85rem; font-weight: 600; }}
+  .trio-name-chip.is-you {{ border-color: var(--accent); color: var(--accent); }}
+  .trio-joiner {{ color: var(--muted); font-size: 0.8rem; font-weight: 700; }}
+  .trio-stats {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }}
+  .trio-stat {{ background: var(--surface2); border-radius: 8px; padding: 10px 8px; text-align: center; }}
+  .trio-stat-val {{ font-size: 1.3rem; font-weight: 800; line-height: 1; margin-bottom: 4px; }}
+  .trio-stat-lbl {{ font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.3; }}
+  .buddy-empty {{ color: var(--muted); font-size: 0.9rem; text-align: center; padding: 40px 20px; border: 1px dashed var(--border); border-radius: var(--radius); }}
+  .buddy-detail-cols {{ display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }}
+  @media (max-width: 520px) {{ .buddy-detail-cols {{ grid-template-columns: 1fr; }} }}
+  .buddy-detail-col-head {{ font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }}
+  .buddy-detail-col-head.can-teach {{ color: var(--yes); }}
+  .buddy-detail-col-head.learns-from {{ color: var(--accent); }}
+  .buddy-detail-list {{ display: flex; flex-direction: column; gap: 2px; max-height: 50vh; overflow-y: auto; }}
+  .buddy-detail-row {{ font-size: 0.82rem; padding: 5px 8px 5px 10px; border-radius: 4px; border-left: 2px solid var(--border); }}
+  .buddy-detail-row.teach {{ border-left-color: var(--yes); background: rgba(61,186,110,0.06); }}
+  .buddy-detail-row.learn {{ border-left-color: var(--accent); background: rgba(79,142,247,0.06); }}
+
   /* SCROLLBAR */
   ::-webkit-scrollbar {{ width: 7px; height: 7px; }}
   ::-webkit-scrollbar-track {{ background: var(--surface); }}
@@ -374,6 +434,7 @@ def generate_html(topics, people, topic_stats, person_scores):
   <button class="tab-btn" onclick="showTab('overview',this)">Overview</button>
   <button class="tab-btn" onclick="showTab('sharpen',this)">Sharpen Iron</button>
   <button class="tab-btn" onclick="showTab('videos',this)">Associated Videos</button>
+  <button class="tab-btn" onclick="showTab('buddy',this)">Buddy Finder</button>
   <div class="nav-right">
     <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">Light Mode</button>
     <span class="updated">Updated: {updated}</span>
@@ -420,6 +481,8 @@ def generate_html(topics, people, topic_stats, person_scores):
       </ul>
       <br>
       <p><strong>Associated Videos Tab</strong>: Browse curated YouTube videos for each topic. Search by keyword or filter by topic to find teaching resources that will help you learn.</p>
+      <br>
+      <p><strong>Buddy Finder Tab</strong>: Enter your name to find the people who complement your knowledge most — those who know what you don&apos;t, and don&apos;t know what you do. Tap any match card to see the full topic breakdown.</p>
     </div>
   </div>
 </div>
@@ -532,6 +595,55 @@ def generate_html(topics, people, topic_stats, person_scores):
     </div>
 
   </div>
+</div>
+
+<!-- BUDDY FINDER -->
+<div id="tab-buddy" class="tab">
+
+  <div class="buddy-search-wrap">
+    <div class="search-panel">
+      <h2>Buddy Finder</h2>
+      <p>Enter your name to let the buddy finder engine suggest the perfect people to buddy up with.</p>
+      <div class="select-wrap" id="buddy-wrap">
+        <div class="input-row">
+          <input class="searchable-input" id="buddy-input"
+            placeholder="Type your name to find matches..."
+            autocomplete="off"
+            oninput="filterDD('buddy')"
+            onfocus="openDD('buddy')"
+            onkeydown="ddKey(event,'buddy')">
+          <button class="clear-btn visible" id="buddy-clear" onclick="clearBuddy()" style="display:none">Clear</button>
+        </div>
+        <div class="dropdown" id="buddy-dd"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="buddy-results" style="display:none" class="buddy-sections">
+    <div>
+      <div class="buddy-section-title">Top 4 Pair Buddies</div>
+      <div class="buddy-pairs-grid" id="buddy-pairs-grid"></div>
+    </div>
+    <div>
+      <div class="buddy-section-title">Top 3 Trio Study Groups</div>
+      <div class="buddy-trios-grid" id="buddy-trios-grid"></div>
+    </div>
+  </div>
+
+  <div id="buddy-empty-state" class="buddy-empty" style="display:none">
+    Not enough other respondents to generate buddy matches.
+  </div>
+
+</div>
+
+<!-- BUDDY DETAIL MODAL -->
+<div id="buddy-modal-overlay" onclick="closeBuddyDetail()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:900"></div>
+<div id="buddy-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:901;width:min(700px,95vw);max-height:80vh;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0">
+    <div id="buddy-modal-title" style="font-weight:700;font-size:1rem;color:var(--text)"></div>
+    <button onclick="closeBuddyDetail()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.3rem;line-height:1;padding:2px 6px" title="Close">&times;</button>
+  </div>
+  <div id="buddy-modal-body" style="overflow-y:auto;padding:18px 20px;flex:1"></div>
 </div>
 
 <script>
@@ -1595,6 +1707,274 @@ function showPersonResult(name) {{
   }}
   document.getElementById('person-result-inner').innerHTML = rows;
   document.getElementById('person-result').classList.add('visible');
+}}
+
+// ── Buddy Finder ──────────────────────────────────────────────────────────
+
+// Extend ddState for buddy picker
+ddState['buddy'] = {{ items: PEOPLE.map(p => p.name), selected: null, focused: -1, filtered: null }};
+
+// Patch selectDD to handle the buddy type (original only handles topic/person)
+const _selectDDOrig = selectDD;
+function selectDD(type, value) {{
+  ddState[type].selected = value;
+  document.getElementById(type + '-input').value = value;
+  const clearBtn = document.getElementById(type + '-clear');
+  if (clearBtn) {{ clearBtn.classList.add('visible'); clearBtn.style.display = ''; }}
+  closeDD(type);
+  if (type === 'topic') showTopicResult(value);
+  else if (type === 'person') showPersonResult(value);
+  else if (type === 'buddy') showBuddyResults(value);
+}}
+
+function clearBuddy() {{
+  ddState['buddy'].selected = null;
+  ddState['buddy'].filtered = null;
+  document.getElementById('buddy-input').value = '';
+  document.getElementById('buddy-clear').style.display = 'none';
+  document.getElementById('buddy-results').style.display = 'none';
+  document.getElementById('buddy-empty-state').style.display = 'none';
+}}
+
+document.addEventListener('click', e => {{
+  const bw = document.getElementById('buddy-wrap');
+  if (bw && !bw.contains(e.target)) closeDD('buddy');
+}});
+
+// ── Scoring ───────────────────────────────────────────────────────────────
+// "Teachable" = A knows (Yes/Sorta), B doesn't (No/Sorta with A=Yes).
+// Specifically:
+//   A=Yes,   B=No    → A can fully teach B   (counted in aToBTopics)
+//   A=Yes,   B=Sorta → A can clarify for B   (counted in aToBTopics)
+//   A=Sorta, B=No    → A can partially teach B (counted in aToBTopics)
+//   (mirror for B→A direction)
+// Ranking key: min(aToBCount, bToACount) — both directions must be strong.
+
+function computePairScore(personA, personB) {{
+  const n = Math.min(personA.responses.length, personB.responses.length, TOPICS.length);
+  const aToBTopics = [], bToATopics = [];
+  let sharedGaps = 0, sharedStrength = 0;
+
+  for (let i = 0; i < n; i++) {{
+    const a = personA.responses[i] || 'No';
+    const b = personB.responses[i] || 'No';
+    const t = TOPICS[i];
+
+    // A can teach B: A knows more than B
+    const aVal = a === 'Yes' ? 2 : a === 'Sorta' ? 1 : 0;
+    const bVal = b === 'Yes' ? 2 : b === 'Sorta' ? 1 : 0;
+
+    if (aVal > bVal) aToBTopics.push(t);
+    if (bVal > aVal) bToATopics.push(t);
+    if (aVal === 0 && bVal === 0) sharedGaps++;       // both No
+    if (aVal === 1 && bVal === 1) sharedGaps++;       // both Sorta
+    if (aVal === 2 && bVal === 2) sharedStrength++;   // both Yes
+  }}
+
+  // Rank by the minimum of both directions — rewards true mutual exchange
+  const mutual = Math.min(aToBTopics.length, bToATopics.length);
+  const total = aToBTopics.length + bToATopics.length;
+  // Score: weighted so mutual exchange matters most, total exchange second.
+  // Realistic best case: topics split 50/50 → mutual=n/2, total=n → rawScore = n/2*2 + n = 2n
+  // Normalize against 2n so a perfect 50/50 split = 100.
+  const rawScore = mutual * 2 + total;
+  const maxPossible = n * 2; // realistic best case
+  const score = Math.max(0, Math.min(100, Math.round(rawScore / maxPossible * 100)));
+
+  return {{
+    score,
+    mutual,
+    aToBCount: aToBTopics.length,
+    bToACount: bToATopics.length,
+    sharedGaps,
+    sharedStrength,
+    aToBTopics,
+    bToATopics,
+  }};
+}}
+
+function computeTrioScore(personA, personB, personC) {{
+  const n = Math.min(personA.responses.length, personB.responses.length, personC.responses.length, TOPICS.length);
+  let coverage = 0, teachable = 0, deadZones = 0;
+  for (let i = 0; i < n; i++) {{
+    const vals = [
+      personA.responses[i] || 'No',
+      personB.responses[i] || 'No',
+      personC.responses[i] || 'No'
+    ].map(r => r === 'Yes' ? 2 : r === 'Sorta' ? 1 : 0);
+    const maxVal = Math.max(...vals);
+    const minVal = Math.min(...vals);
+    if (maxVal >= 1) coverage++;
+    if (maxVal > minVal) teachable++;
+    if (maxVal === 0) deadZones++;
+  }}
+  const score = Math.max(0, Math.min(100, Math.round(
+    (coverage / n) * 60 + (teachable / n) * 40 - (deadZones / n) * 20
+  )));
+  return {{ score, coverage, teachable, deadZones, total: n }};
+}}
+
+// ── Ranking ───────────────────────────────────────────────────────────────
+
+function rankBuddies(selectedName) {{
+  const personA = PEOPLE.find(p => p.name === selectedName);
+  if (!personA) return null;
+  const others = PEOPLE.filter(p => p.name !== selectedName);
+  if (others.length < 1) return null;
+
+  const pairResults = others.map(personB => ({{ buddy: personB, ...computePairScore(personA, personB) }}));
+  // Sort by mutual first (both directions), then total, then score
+  pairResults.sort((a, b) => b.mutual - a.mutual || (b.aToBCount + b.bToACount) - (a.aToBCount + a.bToACount) || b.score - a.score);
+  const top4Pairs = pairResults.slice(0, 4);
+
+  // For each top-4 buddy, find the best 3rd person
+  const trioResults = [];
+  top4Pairs.forEach(pair => {{
+    let bestTrio = null, bestScore = -1;
+    PEOPLE.forEach(personC => {{
+      if (personC.name === selectedName || personC.name === pair.buddy.name) return;
+      const ts = computeTrioScore(personA, pair.buddy, personC);
+      if (ts.score > bestScore) {{ bestScore = ts.score; bestTrio = {{ third: personC, ...ts }}; }}
+    }});
+    if (bestTrio) trioResults.push({{ buddyA: pair.buddy, buddyB: bestTrio.third, ...bestTrio }});
+  }});
+  trioResults.sort((a, b) => b.score - a.score);
+
+  return {{ selectedName, top4Pairs, top3Trios: trioResults.slice(0, 3) }};
+}}
+
+// ── Detail modal ──────────────────────────────────────────────────────────
+
+let _buddyDetailData = null;
+
+function openBuddyDetail(idx) {{
+  if (!_buddyDetailData) return;
+  const p = _buddyDetailData.pairs[idx];
+  const sel = _buddyDetailData.selectedName;
+  const modal = document.getElementById('buddy-modal');
+  const overlay = document.getElementById('buddy-modal-overlay');
+
+  const rowsAtoB = p.aToBTopics.map(t => `<div class="buddy-detail-row teach">${{escH(t)}}</div>`).join('') || '<div class="buddy-detail-row" style="color:var(--muted);font-style:italic">None</div>';
+  const rowsBtoA = p.bToATopics.map(t => `<div class="buddy-detail-row learn">${{escH(t)}}</div>`).join('') || '<div class="buddy-detail-row" style="color:var(--muted);font-style:italic">None</div>';
+
+  document.getElementById('buddy-modal-title').textContent = escH(sel) + ' \u2194 ' + escH(p.buddy.name);
+  document.getElementById('buddy-modal-body').innerHTML = `
+    <div class="buddy-detail-cols">
+      <div class="buddy-detail-col">
+        <div class="buddy-detail-col-head can-teach">${{escH(sel)}} can teach ${{escH(p.buddy.name)}} (${{p.aToBCount}})</div>
+        <div class="buddy-detail-list">${{rowsAtoB}}</div>
+      </div>
+      <div class="buddy-detail-col">
+        <div class="buddy-detail-col-head learns-from">${{escH(p.buddy.name)}} can teach ${{escH(sel)}} (${{p.bToACount}})</div>
+        <div class="buddy-detail-list">${{rowsBtoA}}</div>
+      </div>
+    </div>`;
+
+  modal.style.display = 'flex';
+  overlay.style.display = 'block';
+}}
+
+function closeBuddyDetail() {{
+  document.getElementById('buddy-modal').style.display = 'none';
+  document.getElementById('buddy-modal-overlay').style.display = 'none';
+}}
+
+// ── Rendering ─────────────────────────────────────────────────────────────
+
+function showBuddyResults(name) {{
+  const results = rankBuddies(name);
+  if (!results || results.top4Pairs.length === 0) {{
+    document.getElementById('buddy-results').style.display = 'none';
+    document.getElementById('buddy-empty-state').style.display = '';
+    return;
+  }}
+  _buddyDetailData = {{ selectedName: name, pairs: results.top4Pairs }};
+  document.getElementById('buddy-empty-state').style.display = 'none';
+  document.getElementById('buddy-results').style.display = '';
+  renderBuddyPairs(results.selectedName, results.top4Pairs);
+  renderBuddyTrios(results.selectedName, results.top3Trios);
+}}
+
+function renderBuddyPairs(selectedName, pairs) {{
+  const grid = document.getElementById('buddy-pairs-grid');
+  grid.innerHTML = '';
+  const rankLabels = ['#1 Best Match', '#2', '#3', '#4'];
+  pairs.forEach((p, idx) => {{
+    const color = scoreColor(p.score);
+    const card = document.createElement('div');
+    card.className = 'buddy-card';
+    card.style.cursor = 'pointer';
+    card.title = 'Click to see full topic breakdown';
+    card.onclick = () => openBuddyDetail(idx);
+    card.innerHTML = `
+      <div class="buddy-card-header">
+        <div class="buddy-name">${{escH(p.buddy.name)}}</div>
+        <div class="buddy-rank">${{rankLabels[idx] || '#' + (idx + 1)}}</div>
+      </div>
+      <div class="buddy-score-row">
+        <span class="buddy-score-label">Compatibility</span>
+        <div class="buddy-score-bar"><div class="buddy-score-bar-fill" style="width:${{p.score}}%"></div></div>
+        <span class="score-cell" style="background:${{color}};font-size:0.78rem;padding:3px 7px;min-width:40px">${{p.score}}</span>
+      </div>
+      <div class="buddy-exchange">
+        <div class="buddy-direction">
+          <div class="buddy-dir-label can-teach">You can teach</div>
+          <div class="buddy-dir-count">${{p.aToBCount}}<span>topics</span></div>
+        </div>
+        <div class="buddy-direction">
+          <div class="buddy-dir-label learns-from">You can learn</div>
+          <div class="buddy-dir-count">${{p.bToACount}}<span>topics</span></div>
+        </div>
+      </div>
+      <div class="buddy-footer">
+        <span class="buddy-gap-badge">${{p.sharedGaps}} shared gaps</span>
+        <span class="buddy-common-badge">${{p.sharedStrength}} both know</span>
+        <span style="margin-left:auto;font-size:0.7rem;color:var(--muted)">tap for details &rsaquo;</span>
+      </div>`;
+    grid.appendChild(card);
+  }});
+}}
+
+function renderBuddyTrios(selectedName, trios) {{
+  const grid = document.getElementById('buddy-trios-grid');
+  grid.innerHTML = '';
+  if (trios.length === 0) {{
+    grid.innerHTML = '<div class="buddy-empty">Not enough respondents to form trios.</div>';
+    return;
+  }}
+  trios.forEach(t => {{
+    const color = scoreColor(t.score);
+    const coveragePct = Math.round(t.coverage / t.total * 100);
+    const deadPct = Math.round(t.deadZones / t.total * 100);
+    const card = document.createElement('div');
+    card.className = 'trio-card';
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div class="trio-names">
+          <span class="trio-name-chip is-you">${{escH(selectedName)}}</span>
+          <span class="trio-joiner">+</span>
+          <span class="trio-name-chip">${{escH(t.buddyA.name)}}</span>
+          <span class="trio-joiner">+</span>
+          <span class="trio-name-chip">${{escH(t.buddyB.name)}}</span>
+        </div>
+        <span class="score-cell" style="background:${{color}};flex-shrink:0;font-size:0.78rem;padding:3px 7px">${{t.score}}</span>
+      </div>
+      <div class="trio-stats">
+        <div class="trio-stat">
+          <div class="trio-stat-val" style="color:var(--yes)">${{coveragePct}}%</div>
+          <div class="trio-stat-lbl">Topics at least one knows</div>
+        </div>
+        <div class="trio-stat">
+          <div class="trio-stat-val" style="color:var(--accent)">${{t.teachable}}</div>
+          <div class="trio-stat-lbl">Teaching opportunities</div>
+        </div>
+        <div class="trio-stat">
+          <div class="trio-stat-val" style="color:var(--no)">${{deadPct}}%</div>
+          <div class="trio-stat-lbl">Shared gaps (all 3)</div>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  }});
 }}
 </script>
 </body>
