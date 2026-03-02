@@ -466,6 +466,9 @@ def generate_html(topics, people, topic_stats, person_scores):
       <a class="link-card" href="https://straitisthegatex.net/" target="_blank">
         <div><div class="link-name">Notes Search Tool</div><div class="link-url">straitisthegatex.net</div></div>
       </a>
+      <a class="link-card" href="https://docs.google.com/forms/d/e/1FAIpQLSeQt3OUu6ULGHqqfB2NArVS6B67K2GX0R89TLwBUinURDjflg/viewform" target="_blank">
+        <div><div class="link-name">Original Form (Submit or Edit Your Response)</div><div class="link-url">docs.google.com</div></div>
+      </a>
     </div>
   </div>
 
