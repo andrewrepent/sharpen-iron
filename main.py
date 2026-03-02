@@ -332,6 +332,34 @@ def generate_html(topics, people, topic_stats, person_scores):
   .col-head.no {{ color: var(--no); }}
   .three-col .col-body {{ padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 0.83rem; }}
 
+  /* VIDEOS TAB */
+  .videos-search-bar {{ display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }}
+  .videos-search-bar .search-box {{ max-width: 380px; }}
+  .topic-filter-wrap {{ display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }}
+  .topic-filter-wrap label {{ color: var(--muted); font-size: 0.85rem; white-space: nowrap; }}
+  .topic-select {{ background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.88rem; padding: 9px 12px; outline: none; font-family: inherit; cursor: pointer; min-width: 200px; max-width: 320px; }}
+  .topic-select:focus {{ border-color: var(--accent); }}
+  .video-count {{ color: var(--muted); font-size: 0.85rem; white-space: nowrap; }}
+  .video-topics-list {{ display: flex; flex-direction: column; gap: 24px; }}
+  .video-topic-group {{ background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }}
+  .video-topic-header {{ padding: 14px 20px; border-bottom: 1px solid var(--border); }}
+  .video-topic-header h3 {{ font-size: 0.95rem; font-weight: 700; color: var(--accent); }}
+  .video-topic-header .subtopics {{ color: var(--muted); font-size: 0.78rem; margin-top: 3px; font-style: italic; }}
+  .video-cards {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; padding: 14px 16px; }}
+  .video-card {{ background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color 0.2s, transform 0.15s; display: flex; flex-direction: column; }}
+  .video-card:hover {{ border-color: var(--accent); transform: translateY(-2px); }}
+  .video-thumb {{ position: relative; width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; }}
+  .video-thumb img {{ width: 100%; height: 100%; object-fit: cover; display: block; }}
+  .video-thumb .play-icon {{ position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.35); opacity: 0; transition: opacity 0.2s; }}
+  .video-card:hover .play-icon {{ opacity: 1; }}
+  .play-icon svg {{ width: 40px; height: 40px; fill: white; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }}
+  .video-card-body {{ padding: 10px 12px; flex: 1; }}
+  .video-speaker {{ font-size: 0.75rem; font-weight: 700; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }}
+  .video-link {{ color: var(--text); text-decoration: none; font-size: 0.83rem; display: block; line-height: 1.4; }}
+  .video-link:hover {{ color: var(--accent); }}
+  .video-platform {{ font-size: 0.7rem; color: var(--muted); margin-top: 4px; }}
+  .no-videos-msg {{ color: var(--muted); font-size: 0.9rem; padding: 24px; text-align: center; }}
+
   /* SCROLLBAR */
   ::-webkit-scrollbar {{ width: 7px; height: 7px; }}
   ::-webkit-scrollbar-track {{ background: var(--surface); }}
@@ -345,6 +373,7 @@ def generate_html(topics, people, topic_stats, person_scores):
   <button class="tab-btn active" onclick="showTab('home',this)">Home</button>
   <button class="tab-btn" onclick="showTab('overview',this)">Overview</button>
   <button class="tab-btn" onclick="showTab('sharpen',this)">Sharpen Iron</button>
+  <button class="tab-btn" onclick="showTab('videos',this)">Associated Videos</button>
   <div class="nav-right">
     <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">Light Mode</button>
     <span class="updated">Updated: {updated}</span>
@@ -389,6 +418,8 @@ def generate_html(topics, people, topic_stats, person_scores):
         <li><strong>Search by Topic</strong>: Pick any topic and see who knows it, who partly knows it, and who doesn&apos;t so you can reach out and help people.</li>
         <li><strong>Search by Person</strong>: Pick any person and see what they know, what they&apos;re confused with, and what they still need to learn.</li>
       </ul>
+      <br>
+      <p><strong>Associated Videos Tab</strong>: Browse curated YouTube videos for each topic. Search by keyword or filter by topic to find teaching resources that will help you learn.</p>
     </div>
   </div>
 </div>
@@ -450,6 +481,18 @@ def generate_html(topics, people, topic_stats, person_scores):
       </table>
     </div>
   </div>
+</div>
+
+<!-- ASSOCIATED VIDEOS -->
+<div id="tab-videos" class="tab">
+  <div class="videos-search-bar">
+    <input class="search-box" id="videos-search" placeholder="Search videos or topics..." oninput="filterVideos()">
+    <select class="topic-select" id="videos-topic-filter" onchange="filterVideos()">
+      <option value="">All Topics</option>
+    </select>
+    <span class="video-count" id="video-count"></span>
+  </div>
+  <div class="video-topics-list" id="video-topics-list"></div>
 </div>
 
 <!-- SHARPEN IRON -->
@@ -791,6 +834,745 @@ function showTopicResult(topic) {{
   document.getElementById('topic-result-inner').innerHTML = rows;
   document.getElementById('topic-result').classList.add('visible');
 }}
+
+// ── Associated Videos ─────────────────────────────────────────────────────
+const VIDEO_DATA = [
+  {{
+    topic: "How to Read the Bible",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Andrew", url: "https://youtu.be/ZTdCA-hcY98", note: "Bible cheat codes. IMPORTANT" }},
+      {{ speaker: "Big Mike", url: "https://youtu.be/AKni_2NIjPs", note: "the website he is using is linked in the description" }},
+      {{ speaker: "Mark", url: "https://youtu.be/r1p6B5F1Qwc?si=xiZycx-8Iou6JnFR", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/XfSoifA3NO4?si=i_nFjTkfaXwcgYVk", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Rainbow Covenant",
+    subtopics: "Noahic / Rainbow Covenant — Can Christians eat pork?",
+    videos: [
+      {{ speaker: "Josh", url: "https://youtu.be/ko5k0mb6SUk", note: "" }},
+      {{ speaker: "Group", url: "https://youtu.be/XnMguUIJvMs", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Peter's Vision",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Matthew UK", url: "https://youtu.be/Gq1xgh0rOuk", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/MrcuTC9axCo", note: "" }},
+      {{ speaker: "Daniel San", url: "https://youtu.be/s_kAKIyeFmU", note: "" }}
+    ]
+  }},
+  {{
+    topic: "He Made All Foods Clean",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Matthew UK", url: "https://youtu.be/bjv-9wFkCqE", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/MrcuTC9axCo?si=TDKEdmGYRl6KCUjP", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Love / Fear of God",
+    subtopics: "Enter into life",
+    videos: [
+      {{ speaker: "Mark", url: "https://youtu.be/GG9azonD-Us", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/N9jlpqBuPDg", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/jHA8XxtVGDQ", note: "" }},
+      {{ speaker: "Daniel San", url: "https://youtu.be/6lr-OX5HZIA", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/Lq56OPzkcP8", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/jM5EMybEsjs", note: "Enter into life" }}
+    ]
+  }},
+  {{
+    topic: "The Will of God / Heart's Desire",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Daniel San", url: "https://youtu.be/_I4CsjWkycE", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://www.youtube.com/live/CCR9RpFUnyI?si=Z9_M7tpnOVuHhWf8", note: "" }},
+      {{ speaker: "Big Mike", url: "https://www.tiktok.com/t/ZThXYy6tD/", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Born Again / Christmas",
+    subtopics: "No one celebrating Christmas will enter the kingdom of heaven — Christmas is idolatry",
+    videos: [
+      {{ speaker: "Matthew UK", url: "https://youtu.be/RTD1Z70lO_8", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/EcD11E3RiLQ", note: "No one celebrating Christmas will enter the kingdom of heaven — Christmas is idolatry" }},
+      {{ speaker: "Mark", url: "https://youtu.be/1kQgrfsr7HI", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/BPaD8gIdg4M", note: "Christmas is idolatry" }},
+      {{ speaker: "Ricky", url: "https://youtu.be/2N6F--CMfYc", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/d50Kwga19ew", note: "" }},
+      {{ speaker: "James", url: "https://youtu.be/OcU7z00IqE8", note: "" }},
+      {{ speaker: "Daniel San", url: "https://youtu.be/RLxvQMW4Ls8", note: "" }},
+      {{ speaker: "Daniel San", url: "https://youtu.be/vRl1hDDgbb4", note: "" }},
+      {{ speaker: "Daniel San", url: "https://youtu.be/ZGpypBCPf-s", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Baptism",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Josh", url: "https://youtu.be/2suNCLzDMrc", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/LmrmVtrJjSI?si=ZpBG7veM3SQTQsX5", note: "" }},
+      {{ speaker: "Matthew G", url: "https://youtu.be/LmrmVtrJjSI?si=ZpBG7veM3SQTQsX5", note: "Timestamp: 1:38:30 – 1:45:00" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/lKejL52chHU", note: "" }},
+      {{ speaker: "Big Mike", url: "https://youtu.be/Wq6heGFbkyg", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Peculiar People / Holy Nation",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Daniel San", url: "https://youtu.be/OCnZ4_vtE-8", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/sZeb9PquqW0", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/fGlmmFMSVng", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/P86w_rYF6ww", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/vlwT49Jxey4", note: "" }}
+    ]
+  }},
+  {{
+    topic: "The 10 Commandments",
+    subtopics: "The 1st Commandment with Promise",
+    videos: [
+      {{ speaker: "Mark", url: "https://youtu.be/S0cc3Z2SBaE", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/DhCJ35WIMus", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/CzFwz_MsmDg", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Receive the Holy Spirit",
+    subtopics: "Lose the Spirit — Spirit of Error / Spirit of Fornication / Antichrist Spirit",
+    videos: [
+      {{ speaker: "Matthew UK", url: "https://youtu.be/gWfI9aBRREU", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/jNJxbOgovgY", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/eKPMgIeyPg8", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Works of the Law / Letter of the Law / Law of Sin and Death",
+    subtopics: "First Things Gentiles Should Do / Covenants of Promise — Ministration of Death, Written & Engraven in Stone — Twisting Paul's Words",
+    videos: [
+      {{ speaker: "Matthew UK", url: "https://youtu.be/jM5EMybEsjs", note: "" }},
+      {{ speaker: "Antonio", url: "https://youtu.be/ikozBtaZYIo", note: "" }},
+      {{ speaker: "Antonio", url: "https://youtu.be/3JQhgj51WSA", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/khof_V5ysk8?si=ZQKv5h8NbSJgbxe0", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/m5vHsxSRXF8", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/lo2Lws6KiJY", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/kMLPsNIkUCk", note: "" }},
+      {{ speaker: "James", url: "https://youtu.be/2n1MqNLQOrU", note: "" }},
+      {{ speaker: "Daniel San", url: "https://youtu.be/_I4CsjWkycE", note: "" }},
+      {{ speaker: "Big Mike", url: "https://youtu.be/mfr85MybICw", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Wicked Rulers / Government",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Mark", url: "https://youtu.be/IG7Hs98tSJU", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/Uiml4lHudg8", note: "" }},
+      {{ speaker: "Daniel San", url: "https://youtu.be/O79FhPjLHzo", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/dYPDme9UfBs", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Sabbath / Day Dawning",
+    subtopics: "Lunar Sabbath — Evening Sabbath",
+    videos: [
+      {{ speaker: "Matthew UK", url: "https://youtu.be/HedmsivwhMQ", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/ZBoakb9gYno", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/-1UrtkgW4ok", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/GtavCYOgF04", note: "" }},
+      {{ speaker: "Daniel San", url: "https://youtu.be/wm0W_2IE4xA", note: "" }},
+      {{ speaker: "Daniel San", url: "https://youtu.be/W0nble5B-Us", note: "" }},
+      {{ speaker: "Big Mike", url: "https://youtu.be/Whqe-YVvdh0", note: "" }},
+      {{ speaker: "Big Mike", url: "https://youtu.be/_CKSv_B2Lys", note: "" }},
+      {{ speaker: "Antonio", url: "https://youtu.be/KIc-ae3p-oc", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/b1zX74gXMZU", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/Gexz9TnHaH4", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/LFJWi2h5aKU", note: "" }},
+      {{ speaker: "Josh", url: "https://youtu.be/bu6q-XDBRGI", note: "" }},
+      {{ speaker: "Matthew G", url: "https://youtu.be/BUuiFg6Osdk", note: "" }},
+      {{ speaker: "Matthew G", url: "https://youtu.be/DSvxhZozEtg", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Horeb vs. Sinai",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Andrew & Matthew", url: "https://youtu.be/eN-D5dFZE4c", note: "" }},
+      {{ speaker: "Big Mike", url: "https://youtu.be/msf3OEHVHj0", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/Ri6r58C99MQ", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/jNJxbOgovgY", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/jM5EMybEsjs", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/P86w_rYF6ww", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/pNEWG3jboWQ", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/o0-9uO-En04", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/fB17F5M--CU", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/VAPb0OhJfEQ", note: "" }}
+    ]
+  }},
+  {{
+    topic: "New Covenant vs. Old Covenant",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Josh", url: "https://youtu.be/WQJTcx1CwTI", note: "" }},
+      {{ speaker: "Matthew", url: "https://youtu.be/CIyS2NfnmgQ", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/47eLP0wq6HU", note: "" }},
+      {{ speaker: "Antonio", url: "https://youtu.be/kYBnXOnegKA", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Leaven of Pharisees / Sadducees / Herod",
+    subtopics: "God's Righteousness vs. Self-Righteousness",
+    videos: [
+      {{ speaker: "Mark", url: "https://youtu.be/nNye4O7Rmkk", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/0o2kNunltQ0", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://www.youtube.com/live/pUd4wdWOqFs?si=iqdlU8aRm6No68g6", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/Tk5zsppkq9U", note: "" }},
+      {{ speaker: "Bryce", url: "https://www.youtube.com/live/2yWT1rCPI_4?si=XmuCJVwcNNNindt4", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Name of Baal",
+    subtopics: "Satan Cast Out Satan / Lying Signs & Wonders",
+    videos: [
+      {{ speaker: "Matthew UK", url: "https://youtu.be/xhj_7KRrNw4", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/-Xcw-LpxDcA", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/KVDFTBrrJSA", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/HCMIW48EpW0", note: "" }},
+      {{ speaker: "Josh", url: "https://youtu.be/23GknA_Aezg", note: "" }},
+      {{ speaker: "Bryce", url: "https://www.youtube.com/live/7zJjQMspcsU?si=U2rmqYS5IxzmemB_", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Royal Law / Love Your Neighbor / Law of Liberty / Faith of Yeshua",
+    subtopics: "Hide a Multitude of Sins — Cain vs. Abel's Offering — Judging the Cause of the Fatherless & Widows",
+    videos: [
+      {{ speaker: "Mark", url: "https://youtu.be/jHA8XxtVGDQ", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/OkIXGrxSLvQ", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/My-xFDsPSIQ?si=OnVfeRi4hKBXZ8Bs", note: "" }},
+      {{ speaker: "Andrew", url: "https://www.youtube.com/live/Lq56OPzkcP8?si=geqe10vPihiVLwqs", note: "" }},
+      {{ speaker: "Big Mike", url: "https://youtu.be/e_GpgHJ-bps", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Enter into the Work of the Prophets",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Antonio", url: "https://youtu.be/GknrDUIgMQI", note: "" }},
+      {{ speaker: "Bryce", url: "https://www.youtube.com/live/p36HFyWzyaY?si=mA5xAfo94yiwo1jr", note: "" }}
+    ]
+  }},
+  {{
+    topic: "False Pastors / Shepherds",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Mark", url: "https://youtu.be/3z6fbzWXv54", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/loPv3YuMx3w", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/M2y7-HOAB9c", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/jS-titOauyE", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/m6oLwqUc0eU", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/Jq2mm8HspEY", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Grace / Salt",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Josh", url: "https://youtu.be/711frZ69RzU", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/gF7oLF3JNrc", note: "" }},
+      {{ speaker: "Bryce", url: "https://www.youtube.com/live/uzJq-3vNZn0?si=6qT_4x84m0HLoScf", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/3un8hdDCyrU", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/mg21LTVezVM", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Blasphemy of the Holy Spirit",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Mark", url: "https://youtu.be/AATiH_otp6c", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/s6pYSVstp5U", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/AhwoVfKphcw", note: "" }}
+    ]
+  }},
+  {{
+    topic: "6th Seal / Great Tribulation / The Seals / \u201cThe Rapture\u201d",
+    subtopics: "Revelation 12 Sign",
+    videos: [
+      {{ speaker: "Matthew UK", url: "https://youtu.be/ULUuWcmOhFk", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/Tsi5l-L-MIU", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/W4tTVfaBgxM", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/JSbezj6Y4rg?si=vDwcdpZaMac8IZ-r", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Antichrist / Sons of Perdition",
+    subtopics: "Abomination of Desolation",
+    videos: [
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/yiAT6DBIeDM?si=7kfEtdzprtF1ou27", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/m5vHsxSRXF8", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://www.youtube.com/live/NNZDuAMSzQQ?si=NDX7AUY5uuglUK95", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://www.youtube.com/live/botRR5Aynms?si=c82wr2LutFsXfn_T", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Mercy not Sacrifice",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Mark", url: "https://youtu.be/GUlb3FP1ShM?si=9AiNfuKOwAnfz2dL", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/ahOQmbKILjM?si=DZa31JBL_ldDbj1P", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/EELdTFhjvE0?si=z2SANU_WxKQ3Kfe8", note: "" }},
+      {{ speaker: "Bryce", url: "https://www.youtube.com/live/Fd9IY6LghZA?si=mmmJM6K3QxSk5JSQ", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Ephraim",
+    subtopics: "They Are Rich / Rich Young Ruler / The Church at Laodicea — U.S.A.",
+    videos: [
+      {{ speaker: "Andrew", url: "https://www.youtube.com/live/-cyj23Vnz38?si=wMDyhiR0nDwyQ9BT", note: "" }},
+      {{ speaker: "Big Mike", url: "https://youtu.be/oZ23Ce7yAjM", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://www.youtube.com/live/JikYxqy89Ww?si=RU6mKrd9RG8zJbBt", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/L8Lzc7_1Sw8", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/hWTtw_dlQfs?si=F9rMbPxQM00P7wpu", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/2IBYi2PcH88", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Drunkard / Glutton",
+    subtopics: "Publicans & Harlots Enter Kingdom First",
+    videos: [
+      {{ speaker: "Matthew UK", url: "https://youtu.be/e9JLe4YicSU", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/yo2CjHjM_f4?si=-sQtdqohEJ_XNtof", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Babylon & Chaldeans",
+    subtopics: "Babylon is Fallen — The Elect in Babylon",
+    videos: [
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/ivF1A_aQMDY?si=hCslpnA9ZC_SGSTU", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/1RmN4aAvnPs?si=gwE95wroHYCr3Qyb", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/W5NRQ2BDNM4?si=wqjmWRC1Za_S1Jqn", note: "" }},
+      {{ speaker: "Andrew", url: "https://www.youtube.com/live/cQIpCoXxiRo?si=l73Wvw7H3y3hGQMe", note: "" }},
+      {{ speaker: "Bryce", url: "https://www.youtube.com/live/feGW4m--QGQ?si=Tqp5gRoe8bmgJrX5", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Who is Israel / Lost 10 Tribes",
+    subtopics: "Bill of Divorce / Remarriage — Ye Are Not My People, Ye Are My People — Woman at the Well — Why the Ezekiel Temple Wasn't Built — The Apostasy of the Church / 2 Timothy 3 & 4 — Septuagint & Why It Was Written — Judah Already Taken",
+    videos: [
+      {{ speaker: "Matthew US", url: "https://youtu.be/RSXNt75QFfA?si=EK04kWpRCL3hKEL1", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/qvYQ3yW5d5c", note: "" }},
+      {{ speaker: "Andrew", url: "https://www.youtube.com/live/2FhNXPoJgZE?si=8vE-OGZfmML2zcYT", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/lfi9TpmYf8M?si=5tEKV-IyrNCI-4Od", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/EJf4LHgHJ4I?si=j42_2Hd6ktEvTfij", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/nZ9jApQOpmA", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/LBEY-l0zp3I?si=aqmhd5ugv7-N5P3G", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://www.youtube.com/live/-WGkykmNHio?si=E8PoXMGYof2RV1w3", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Jacob / Manchild / Bride / 144k / Many Sons / Nation Formed at Once",
+    subtopics: "Rod of Iron — The New Song of Moses — The Church at Philadelphia",
+    videos: [
+      {{ speaker: "Andrew", url: "https://www.youtube.com/live/H1bd-TMB_no?si=hW3Tz1XgP6lAPx4I", note: "" }},
+      {{ speaker: "Andrew", url: "https://www.youtube.com/live/CeqgSkCHTaQ?si=G_GgRl4kZLCDIge2", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/vkU7vk4yOLA?si=gCqrK9e820Ocylkz", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/_sXsoV5M6XQ?si=9WXL2PPs_ThTfJlh", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/j2pc_6d_xUw?si=HzmPAmSzELq6hGYn", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/JSbezj6Y4rg?si=vDwcdpZaMac8IZ-r", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/JjtEnFuKbEc?si=ajJJjBSZDvORVnZu", note: "" }},
+      {{ speaker: "Matthew", url: "https://www.youtube.com/live/ebIy5WmJirQ?si=8MmHx8RXGDMOKrui", note: "" }},
+      {{ speaker: "Bryce", url: "https://www.youtube.com/live/T8NNZj5du_4?si=lsC54SlfsAB6gLYe", note: "" }},
+      {{ speaker: "Bryce", url: "https://www.youtube.com/live/CXS51EdSbhk?si=Pq1OgKEW4sMzBlL1", note: "" }}
+    ]
+  }},
+  {{
+    topic: "2nd Exodus",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Matthew UK", url: "https://youtu.be/0vpIEm1dXBo?si=b9OHflgusBJj9lCL", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/-TaikvgkRwU?si=pEt_xypanLsIvqz3", note: "" }}
+    ]
+  }},
+  {{
+    topic: "2 Houses / Sticks",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Mark", url: "https://youtu.be/KxPF9BL2hKQ?si=MXtvMKDfJ63DMIfi", note: "" }},
+      {{ speaker: "Bryce", url: "https://www.youtube.com/live/ELNGLZb2qko?si=SVhdj90tXTN5dr1K", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Rules to Rebuke",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Andrew", url: "https://www.youtube.com/live/c6D5RmHlkfk?si=hAy1xg2EauO9gDcv", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/6oswHsZ1gaU?si=gmaLeJCTWjz0XMdZ", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Jezebel & Ahab",
+    subtopics: "Rules for Women — Punishment to Women",
+    videos: [
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/tpHqNqiybfg?si=HsxT7Zw6xK23ryKS", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/Ue1Hh6hUgng?si=YjR6YfW3FKNqM_FI", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Watchmen",
+    subtopics: "Watchman of Ephraim",
+    videos: [
+      {{ speaker: "Josh", url: "https://youtu.be/A0UNgmwqZtI", note: "" }},
+      {{ speaker: "James", url: "https://www.youtube.com/live/3zS_HzrTSgM?si=YRRRi8o8wANeHKu7", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Key of David",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Matthew UK", url: "https://youtu.be/2I0CtHIiQX8?si=vyVIylzG9uqJAX3i", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/0Yq4NBXtp9s?si=xX8iIKG0I0qfeQZm", note: "" }},
+      {{ speaker: "Andrew", url: "https://www.youtube.com/live/GdCEwmRgULI?si=Uj6llretGlBltT8W", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Ethiopian Eunuch / Hidden Manna",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Matthew UK", url: "https://youtu.be/ZfcnSUCHJoE?si=Rq01m7rKmEo-ACOd", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/2IBYi2PcH88", note: "" }}
+    ]
+  }},
+  {{
+    topic: "The Olivet Discourse",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Mark", url: "https://youtu.be/E6_ZE3ISRCE?si=Yxx7YPZjz3b09Ov3", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/H_4GaJ3smhU?si=W-x0SF1jIaOZXBIp", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/WKhsANcnllw?si=Bk8xXlAiOcuq1f0s", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Evil Servants / 7 Worse Spirits / Esau",
+    subtopics: "Do This & You'll Never Fall — Wise in Their Own Conceits — Presumptuous Sin — They Make Their Robes White / Death Swallowed in Victory / Ephraim Goes Into the Pit",
+    videos: [
+      {{ speaker: "Andrew", url: "https://youtu.be/eKPMgIeyPg8?si=QpeV0njk7_GYiQct", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/Baf7fU-xh5k", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/axPCGtd86Lk", note: "" }},
+      {{ speaker: "Big Mike", url: "https://youtu.be/mWqVtHuf2lA?si=-Yb0UNKF9YgWwR_g", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Dumb Dog Watchmen",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Mark", url: "https://youtu.be/Jaw3AcUsQoU?si=gqhvriks9OFN5XwL", note: "" }},
+      {{ speaker: "Bryce", url: "https://www.youtube.com/live/0f4Y5abZw2Q?si=BOu5uTzDpXQP3Rhy", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Unjust Steward",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Mark", url: "https://youtu.be/qz2sK7vUzW0", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/95vfyuvMBjU?si=t9i5JjilrJcEZmNV", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/ehVvJpbiE10?si=XE4WDQI13-Iv2CRe", note: "" }}
+    ]
+  }},
+  {{
+    topic: "All the Parables",
+    subtopics: "What It Means to be Converted",
+    videos: [
+      {{ speaker: "Bryce", url: "https://www.youtube.com/live/1kMrGFkK1V0?si=V7A5wXM0Se3nVxbF", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Refreshing / Good Tidings / Gospel",
+    subtopics: "Promise to Abraham — Death, Burial, Resurrection (DBR) Gospel — When Will Yeshua Return — The Melchizedek Scroll (11Q13)",
+    videos: [
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/GnlNydyMZs8?si=CFUWDenapEf3ZIzo", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/qdSKtxhCPmY?si=ZdA0ONFEfI8DY01S", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/W7JF4bezh_g?si=qCayvlgnlEnd2lvu", note: "" }},
+      {{ speaker: "Andrew", url: "https://www.youtube.com/live/wHUya4jvBKE?si=UnGFqHXgnhQ4ZI5k", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/eN-D5dFZE4c?si=fmPojf4bCfp57waf", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/08OB1sZA-w8?si=T3nU9bZ6nzFHh4xb", note: "" }},
+      {{ speaker: "Andrew", url: "https://youtu.be/2vzC10UGpBA?si=YZWO-CfkKHy5811t", note: "" }},
+      {{ speaker: "Bryce", url: "https://www.youtube.com/live/18r2GkwJI90?si=m9spiAsNVcRMFfVR", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Sermon on the Mount / Beatitudes",
+    subtopics: "The Blessed / The Beloved / Who Yeshua Prayed For",
+    videos: [
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/ao9IKdglmg0?si=_FGXS-JJv6bUETiX", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/C-D0n7vBCwI?si=U1P5zY3MD4LiBUGs", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/a-TdqS9Jr1M?si=wEM3q4Q6kZlDYgCP", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Fruits of the Spirit",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Andrew", url: "https://youtu.be/smeRoNSmneI?si=HH4s0wm8pfC4anPu", note: "" }},
+      {{ speaker: "Antonio", url: "https://youtu.be/AocjjC-s9qY", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Foolish Things That Confound the Wise",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Mark", url: "https://youtu.be/VlyB-zXGN5A", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Jerusalem's Destruction",
+    subtopics: "New Heavens & New Earth — Earth Void & Without Form — What God Did In Shiloh / Red Heifer Sacrifice",
+    videos: [
+      {{ speaker: "Bryce", url: "https://www.youtube.com/live/cAwayrdiI0s?si=BNArDSpgzMU6TDpn", note: "" }},
+      {{ speaker: "Antonio", url: "https://www.youtube.com/live/GY8HfZYaNRY?si=KEBFD4fTWvl1VYae", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/9p0kCui31gQ?si=bXWKrPsDIKTUXtlH", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/8pjCjRREJBE?si=mFiepllsAKyq11gp", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/7mBnCdYSluI?si=jlhICIyGNBvrW3LQ", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/80qPXMXUzWY?si=CyoSSGD6rfP8_eSY", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Easter",
+    subtopics: "3 Days & 3 Nights — The False Sunday Resurrection Tradition",
+    videos: [
+      {{ speaker: "Matthew UK", url: "https://youtu.be/hN6cgBNR_ZE?si=zg6hhA3XvGFRoAw0", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/A6CjL25OPn8?si=NmKk8j0R77OAIuDt", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Gainsaying of Korah/Core",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Andrew", url: "https://www.youtube.com/live/iPsTpYKVjeM?si=t-yY9oXHzQ2GtL8j", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Whitestone",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Mark", url: "https://youtu.be/JYDSdVHRdOc", note: "" }}
+    ]
+  }},
+  {{
+    topic: "The Lord's Prayer",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/I9BVLQM-7-k?si=EAdG6Th5Fp_fA27f", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Lying Pen of the Scribes",
+    subtopics: "Strong's Concordance / Gentle",
+    videos: [
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/_C8xvhl34A8?si=-mMNSclcRx6JGE-E", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Thief on the Cross",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Big Mike", url: "https://youtu.be/81nvzfmQPyM", note: "" }},
+      {{ speaker: "James", url: "https://youtu.be/7uQS-zZmN_U", note: "Timestamp: 44:00 – 47:00" }}
+    ]
+  }},
+  {{
+    topic: "The Feasts",
+    subtopics: "Ephraim Envies Judah",
+    videos: [
+      {{ speaker: "Bryce", url: "https://www.youtube.com/live/OJZxM6Oxlho?si=gIw0iX4qMNQApDee", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Removing the Bound",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Mark", url: "https://youtu.be/Juivyqu-teE", note: "" }},
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/8GTqNP0Oqrk?si=fQcIj8_xv5bBELMD", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Enemies of Your Own Household",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Andrew", url: "https://www.youtube.com/live/aP6-ZvkQPIg?si=7bWwC6ajIbPuM5qr", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/-jbX0l8oIGY", note: "" }},
+      {{ speaker: "Bryce", url: "https://www.youtube.com/live/lnt3jCTDU9M?si=jcAQzMJB4XUfRain", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Bema Seat Judgment / 7 Churches",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Andrew", url: "https://www.youtube.com/live/KSwMh-jvyCI?si=jJ1KNkU6w70DMFc_", note: "" }},
+      {{ speaker: "Mark", url: "https://youtu.be/dCWnZnR-d08?si=Gv65bKKvnPkvFtJv", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Yeshua is not God",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Antonio", url: "https://www.youtube.com/live/xxDMmRDFr9I?si=y4gEgtR-IeEF6OVQ", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Yeshua Writing in the Earth Twice",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Andrew", url: "https://youtu.be/IYiVxq9Tjqk", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Corner Stone / Rock of Offence / Stumbling Stone",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Daniel Morgan", url: "https://youtu.be/oCQw4cAtFRI", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/1L-Ipk8nnEs?si=cJTfl5QKK6G3UU3z", note: "" }},
+      {{ speaker: "Matthew UK", url: "https://youtu.be/hT2HMst9IiA?si=NKJPyfeDcseRzOd1", note: "" }},
+      {{ speaker: "Andrew", url: "https://www.youtube.com/live/vlwT49Jxey4?si=CKdNF9jpU2B3HVeA", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Be Perfect",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Matthew UK", url: "https://youtu.be/KgspnVZKMEU?si=hHPl1HdhzRkjXvJx", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Paleo Hebrew / Word Police",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Mark", url: "https://youtu.be/Jaw3AcUsQoU?si=36UBNHantqaJSKVo", note: "" }}
+    ]
+  }},
+  {{
+    topic: "1 Thessalonians 4 vs. 1 Thessalonians 5",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Andrew", url: "https://www.youtube.com/live/_6Lza75HYoM?si=M-cequhtQfQvFtPb", note: "" }}
+    ]
+  }},
+  {{
+    topic: "White / Black Hebrew Israelites",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Mark", url: "https://youtu.be/K_LSMgQLHaw?si=qLM-TuQD_c-qL7_M", note: "" }}
+    ]
+  }},
+  {{
+    topic: "Speaking in Tongues vs. Prophesying",
+    subtopics: "",
+    videos: [
+      {{ speaker: "Mark", url: "https://www.youtube.com/live/e79W8aZ1qBE?si=OAiG1KSkglkUshQ4", note: "" }},
+      {{ speaker: "Antonio", url: "https://youtu.be/aOfjIcOFcXQ", note: "" }}
+    ]
+  }}
+];
+
+// Populate topic filter dropdown
+(function() {{
+  const sel = document.getElementById('videos-topic-filter');
+  VIDEO_DATA.forEach(g => {{
+    const opt = document.createElement('option');
+    opt.value = g.topic;
+    opt.textContent = g.topic;
+    sel.appendChild(opt);
+  }});
+}})();
+
+function getYouTubeId(url) {{
+  try {{
+    const u = new URL(url);
+    if (u.hostname === 'youtu.be') return u.pathname.slice(1).split('?')[0];
+    if (u.hostname.includes('youtube.com')) {{
+      const v = u.searchParams.get('v');
+      if (v) return v;
+      // live URLs: /live/ID
+      const liveParts = u.pathname.match(/[/]live[/]([^/?]+)/);
+      if (liveParts) return liveParts[1];
+    }}
+  }} catch(e) {{}}
+  return null;
+}};
+
+function getPlatformLabel(url) {{
+  if (url.includes('tiktok.com')) return 'TikTok';
+  if (url.includes('youtube.com') || url.includes('youtu.be')) return 'YouTube';
+  return 'External Link';
+}};
+
+function renderVideoCard(v) {{
+  const ytId = getYouTubeId(v.url);
+  const platform = getPlatformLabel(v.url);
+  const thumbHtml = ytId
+    ? `<div class="video-thumb">
+        <img src="https://img.youtube.com/vi/${{ytId}}/mqdefault.jpg" alt="" loading="lazy">
+        <div class="play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+       </div>`
+    : `<div class="video-thumb" style="background:var(--surface2);display:flex;align-items:center;justify-content:center;">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--muted)"><path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+       </div>`;
+  const noteHtml = v.note ? `<div style="color:var(--muted);font-size:0.72rem;margin-top:3px;font-style:italic">${{escH(v.note)}}</div>` : '';
+  return `<a class="video-card" href="${{escH(v.url)}}" target="_blank" rel="noopener">
+    ${{thumbHtml}}
+    <div class="video-card-body">
+      <div class="video-speaker">${{escH(v.speaker)}}</div>
+      <div class="video-link">${{escH(v.url.replace(/^https?:[/][/]/, ''))}}</div>
+      ${{noteHtml}}
+      <div class="video-platform">${{platform}}</div>
+    </div>
+  </a>`;
+}};
+
+function filterVideos() {{
+  const q = document.getElementById('videos-search').value.toLowerCase();
+  const topicFilter = document.getElementById('videos-topic-filter').value;
+  const container = document.getElementById('video-topics-list');
+  container.innerHTML = '';
+  let totalVideos = 0;
+
+  const filtered = VIDEO_DATA.filter(g => {{
+    if (topicFilter && g.topic !== topicFilter) return false;
+    if (!q) return true;
+    return g.topic.toLowerCase().includes(q)
+      || g.subtopics.toLowerCase().includes(q)
+      || g.videos.some(v => v.speaker.toLowerCase().includes(q) || v.note.toLowerCase().includes(q));
+  }});
+
+  filtered.forEach(g => {{
+    const vids = q
+      ? g.videos.filter(v => v.speaker.toLowerCase().includes(q) || v.note.toLowerCase().includes(q) || g.topic.toLowerCase().includes(q) || g.subtopics.toLowerCase().includes(q))
+      : g.videos;
+
+    if (vids.length === 0 && !g.topic.toLowerCase().includes(q) && !g.subtopics.toLowerCase().includes(q)) return;
+
+    totalVideos += vids.length;
+    const group = document.createElement('div');
+    group.className = 'video-topic-group';
+    const subtopicsHtml = g.subtopics ? `<div class="subtopics">${{escH(g.subtopics)}}</div>` : '';
+    group.innerHTML = `
+      <div class="video-topic-header">
+        <h3>${{escH(g.topic)}}</h3>
+        ${{subtopicsHtml}}
+      </div>
+      <div class="video-cards">${{vids.length > 0 ? vids.map(renderVideoCard).join('') : '<div class="no-videos-msg" style="padding:12px 16px">No videos yet for this topic.</div>'}}</div>`;
+    container.appendChild(group);
+  }});
+
+  if (filtered.length === 0) {{
+    container.innerHTML = '<div class="no-videos-msg">No topics match your search.</div>';
+  }}
+  document.getElementById('video-count').textContent = totalVideos + ' video' + (totalVideos !== 1 ? 's' : '');
+}};
+
+// Init videos tab
+filterVideos();
 
 function showPersonResult(name) {{
   const person = PEOPLE.find(p => p.name === name);
