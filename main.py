@@ -28,7 +28,18 @@ def fetch_data():
     cols = table["cols"]
     rows = table["rows"]
 
-    topics = [cols[i]["label"] for i in range(2, len(cols))]
+    # Find and exclude any non-topic columns (e.g. "Phone Number")
+    EXCLUDED_LABELS = {"phone number"}
+    phone_col = None  # column index (absolute) of phone number field
+    topic_col_indices = []  # absolute column indices that are real topics
+    for i in range(2, len(cols)):
+        label = cols[i]["label"].strip()
+        if label.lower() in EXCLUDED_LABELS:
+            phone_col = i
+        else:
+            topic_col_indices.append(i)
+
+    topics = [cols[i]["label"] for i in topic_col_indices]
 
     people = []
     for row in rows:
@@ -37,11 +48,16 @@ def fetch_data():
         name = (name_cell.get("v") or name_cell.get("f") or "Unknown") if name_cell else "Unknown"
         ts_cell = cells[0] if cells else None
         timestamp = (ts_cell.get("f") or "") if ts_cell else ""
+        # Extract phone if present
+        phone = ""
+        if phone_col is not None and phone_col < len(cells):
+            phone_cell = cells[phone_col]
+            phone = (phone_cell.get("v") or "") if phone_cell else ""
         responses = []
-        for i in range(2, len(cells)):
-            raw = cells[i].get("v") if cells[i] else None
+        for i in topic_col_indices:
+            raw = cells[i].get("v") if i < len(cells) and cells[i] else None
             responses.append(simplify_response(raw))
-        people.append({"name": name, "timestamp": timestamp, "responses": responses})
+        people.append({"name": name, "timestamp": timestamp, "responses": responses, "phone": str(phone).strip()})
 
     return topics, people
 
@@ -164,7 +180,7 @@ def generate_html(topics, people, topic_stats, person_scores):
     person_scores_js = json.dumps(person_scores)
     topics_js = json.dumps(topics)
     people_js = json.dumps([
-        {"name": p["name"], "responses": p["responses"]} for p in people
+        {"name": p["name"], "responses": p["responses"], "phone": p.get("phone", "")} for p in people
     ])
     correlations_js = json.dumps(correlations)
 
@@ -1860,8 +1876,25 @@ function openBuddyDetail(idx) {{
   const rowsAtoB = p.aToBTopics.map(t => `<div class="buddy-detail-row teach">${{escH(t)}}</div>`).join('') || '<div class="buddy-detail-row" style="color:var(--muted);font-style:italic">None</div>';
   const rowsBtoA = p.bToATopics.map(t => `<div class="buddy-detail-row learn">${{escH(t)}}</div>`).join('') || '<div class="buddy-detail-row" style="color:var(--muted);font-style:italic">None</div>';
 
+  // Phone numbers
+  const selPerson = PEOPLE.find(p2 => p2.name === sel);
+  const selPhone = selPerson && selPerson.phone ? selPerson.phone : '';
+  const buddyPhone = p.buddy.phone || '';
+  const phoneHtml = (selPhone || buddyPhone) ? `
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+      ${{selPhone ? `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:0.85rem">
+        <span style="color:var(--muted);font-size:0.72rem;display:block;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.05em">${{escH(sel)}}</span>
+        <a href="tel:${{escH(selPhone)}}" style="color:var(--accent);text-decoration:none;font-weight:600">${{escH(selPhone)}}</a>
+      </div>` : ''}}
+      ${{buddyPhone ? `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:0.85rem">
+        <span style="color:var(--muted);font-size:0.72rem;display:block;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.05em">${{escH(p.buddy.name)}}</span>
+        <a href="tel:${{escH(buddyPhone)}}" style="color:var(--accent);text-decoration:none;font-weight:600">${{escH(buddyPhone)}}</a>
+      </div>` : ''}}
+    </div>` : '';
+
   document.getElementById('buddy-modal-title').textContent = escH(sel) + ' \u2194 ' + escH(p.buddy.name);
   document.getElementById('buddy-modal-body').innerHTML = `
+    ${{phoneHtml}}
     <div class="buddy-detail-cols">
       <div class="buddy-detail-col">
         <div class="buddy-detail-col-head can-teach">${{escH(sel)}} can teach ${{escH(p.buddy.name)}} (${{p.aToBCount}})</div>
